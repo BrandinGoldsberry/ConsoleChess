@@ -130,7 +130,7 @@ namespace ChessConsole
         {
             if(isRandom)
             {
-
+                RandomReset();
             } 
             else
             {
@@ -201,6 +201,90 @@ namespace ChessConsole
             addPiece(cells[6, 0], new Knight(PlayerColor.White));
             addPiece(cells[7, 0], new Rook(PlayerColor.White));
 
+            AddPawns();
+
+            addPiece(cells[0, 7], new Rook(PlayerColor.Black));
+            addPiece(cells[1, 7], new Knight(PlayerColor.Black));
+            addPiece(cells[2, 7], new Bishop(PlayerColor.Black));
+            addPiece(cells[3, 7], new Queen(PlayerColor.Black));
+            addPiece(cells[4, 7], (blackKing = new King(PlayerColor.Black)));
+            addPiece(cells[5, 7], new Bishop(PlayerColor.Black));
+            addPiece(cells[6, 7], new Knight(PlayerColor.Black));
+            addPiece(cells[7, 7], new Rook(PlayerColor.Black));
+
+            foreach (Piece piece in pieces)
+            {
+                piece.Recalculate();
+            }
+        }
+
+        /// <summary>
+        /// Resets the board state to be random
+        /// </summary>
+        public void RandomReset()
+        {
+            Random random = new Random();
+            cells = new Cell[8, 8];
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    cells[i, j] = new Cell(this, i, j);
+                }
+            }
+
+            pieces.Clear();
+
+            EnPassant = null;
+            EnPassantCapture = null;
+
+            List<int> TakenSquares = new List<int>();
+            //Bishop black squares: 0246
+            //Bishop white squares: 1357
+            int bishopBlackSquare = random.Next(0, 4) * 2;
+            int bishopWhiteSquare = (random.Next(0, 4) * 2) + 1;
+            TakenSquares.Add(bishopBlackSquare);
+            TakenSquares.Add(bishopWhiteSquare);
+
+            int QueenSquare = GenerateRandomPlace(TakenSquares);
+            int KnightOneSquare = GenerateRandomPlace(TakenSquares);
+            int KnightTwoSquare = GenerateRandomPlace(TakenSquares);
+            int[] RookAndKingPlaces = GenerateRookAndKingPlacement(TakenSquares);
+
+            AddPawns();
+
+            addPiece(cells[bishopBlackSquare, 0], new Bishop(PlayerColor.White));
+            addPiece(cells[bishopWhiteSquare, 0], new Bishop(PlayerColor.White));
+            addPiece(cells[QueenSquare, 0], new Queen(PlayerColor.White));
+            addPiece(cells[KnightOneSquare, 0], new Knight(PlayerColor.White));
+            addPiece(cells[KnightTwoSquare, 0], new Knight(PlayerColor.White));
+            addPiece(cells[RookAndKingPlaces[0], 0], new Rook(PlayerColor.White));
+            addPiece(cells[RookAndKingPlaces[1], 0], whiteKing = new King(PlayerColor.White));
+            addPiece(cells[RookAndKingPlaces[2], 0], new Rook(PlayerColor.White));
+
+            addPiece(cells[FindBlackLocation(bishopBlackSquare), 7], new Bishop(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(bishopWhiteSquare), 7], new Bishop(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(QueenSquare), 7], new Queen(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(KnightOneSquare), 7], new Knight(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(KnightTwoSquare), 7], new Knight(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(RookAndKingPlaces[0]), 7], new Rook(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(RookAndKingPlaces[1]), 7], blackKing = new King(PlayerColor.Black));
+            addPiece(cells[FindBlackLocation(RookAndKingPlaces[2]), 7], new Rook(PlayerColor.Black));
+
+
+            foreach (Piece piece in pieces)
+            {
+                piece.Recalculate();
+            }
+        }
+
+        private int FindBlackLocation(int WhiteLocation)
+        {
+            return 7 - WhiteLocation;
+        }
+
+        private void AddPawns()
+        {
             addPiece(cells[0, 1], new Pawn(PlayerColor.White));
             addPiece(cells[1, 1], new Pawn(PlayerColor.White));
             addPiece(cells[2, 1], new Pawn(PlayerColor.White));
@@ -218,20 +302,35 @@ namespace ChessConsole
             addPiece(cells[5, 6], new Pawn(PlayerColor.Black));
             addPiece(cells[6, 6], new Pawn(PlayerColor.Black));
             addPiece(cells[7, 6], new Pawn(PlayerColor.Black));
+        }
 
-            addPiece(cells[0, 7], new Rook(PlayerColor.Black));
-            addPiece(cells[1, 7], new Knight(PlayerColor.Black));
-            addPiece(cells[2, 7], new Bishop(PlayerColor.Black));
-            addPiece(cells[3, 7], new Queen(PlayerColor.Black));
-            addPiece(cells[4, 7], (blackKing = new King(PlayerColor.Black)));
-            addPiece(cells[5, 7], new Bishop(PlayerColor.Black));
-            addPiece(cells[6, 7], new Knight(PlayerColor.Black));
-            addPiece(cells[7, 7], new Rook(PlayerColor.Black));
-
-            foreach (Piece piece in pieces)
+        private int[] GenerateRookAndKingPlacement(List<int> takenSquares)
+        {
+            int[] ret = new int[3];
+            int currentPlacement = 0;
+            for (int i = 0; i < 7; i++)
             {
-                piece.Recalculate();
+                if(!takenSquares.Contains(i))
+                {
+                    ret[currentPlacement] = i;
+                    currentPlacement++;
+                }
             }
+            return ret;
+        }
+
+        private int GenerateRandomPlace(List<int> takenSquares)
+        {
+            Random random = new Random();
+            int checkLocation = 0;
+            bool placeTaken = true;
+            while(placeTaken)
+            {
+                checkLocation = random.Next(0, 8);
+                placeTaken = takenSquares.Contains(checkLocation);
+            }
+            takenSquares.Add(checkLocation);
+            return checkLocation;
         }
 
         /// <summary>
