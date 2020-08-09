@@ -81,13 +81,13 @@ namespace ChessConsole
         public abstract void Recalculate();
 
         /// <summary>
-        /// Tells if the moved piece on the cell changed the hit state of the blocked 
+        /// Checks if by moving from the current cell to the desired cell caused the capture target to be uncapturable
         /// </summary>
-        /// <param name="from">Where the piece stands right now</param>
-        /// <param name="to">Where the piece is moved</param>
-        /// <param name="blocked">Hit tests this piece</param>
-        /// <returns>If blocked is hittable after moving the from</returns>
-        public abstract bool IsBlockedIfMove(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked);
+        /// <param name="CurrentCell">Where the piece stands right now</param>
+        /// <param name="DesiredCell">Where the piece is moved</param>
+        /// <param name="CaptureTarget">Hit tests this piece</param>
+        /// <returns>If blocked is capturable by another piece after moving the piece</returns>
+        public abstract bool CheckIfTargetCapturable(ChessBoard.Cell CurrentCell, ChessBoard.Cell DesiredCell, ChessBoard.Cell CaptureTarget);
 
         public abstract char Char { get; }
 

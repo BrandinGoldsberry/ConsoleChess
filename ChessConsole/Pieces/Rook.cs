@@ -50,7 +50,7 @@ namespace ChessConsole.Pieces
             directions[3] = new Direction(this, 1, 0);
         }
 
-        public override bool IsBlockedIfMove(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked)
+        public override bool CheckIfTargetCapturable(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked)
         {
             //If any direction can hit the blocked return false
             foreach (Direction direction in directions)

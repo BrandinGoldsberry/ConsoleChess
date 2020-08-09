@@ -39,30 +39,30 @@ namespace ChessConsole.Pieces
         public override void Recalculate()
         {
             //2 up 1 left
-            possibleCells[0] = Parent.Open(-1, 2);
+            possibleCells[0] = Parent.GetRelativeCell(-1, 2);
             //2 down 1 left
-            possibleCells[1] = Parent.Open(-1, -2);
+            possibleCells[1] = Parent.GetRelativeCell(-1, -2);
             //2 up 1 right
-            possibleCells[2] = Parent.Open(1, 2);
+            possibleCells[2] = Parent.GetRelativeCell(1, 2);
             //2 down 1 right
-            possibleCells[3] = Parent.Open(1, -2);
+            possibleCells[3] = Parent.GetRelativeCell(1, -2);
             //1 up 2 left
-            possibleCells[4] = Parent.Open(-2, 1);
+            possibleCells[4] = Parent.GetRelativeCell(-2, 1);
             //1 down 2 left
-            possibleCells[5] = Parent.Open(-2, -1);
+            possibleCells[5] = Parent.GetRelativeCell(-2, -1);
             //1 up 2 right
-            possibleCells[6] = Parent.Open(2, 1);
+            possibleCells[6] = Parent.GetRelativeCell(2, 1);
             //1 down 2 right
-            possibleCells[7] = Parent.Open(2, -1);
+            possibleCells[7] = Parent.GetRelativeCell(2, -1);
 
             for (int i = 0; i < 8; i++)
             {
                 if (possibleCells[i] != null)
-                    possibleCells[i].HitBy.Add(this);
+                    possibleCells[i].PiecesThatCanMoveHere.Add(this);
             }
         }
 
-        public override bool IsBlockedIfMove(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked)
+        public override bool CheckIfTargetCapturable(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked)
         {
             //The knight's hits cannot be blocked
             for (int i = 0; i < 8; i++)

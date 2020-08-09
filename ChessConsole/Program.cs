@@ -7,9 +7,19 @@ namespace ChessConsole
         static ChessGame game;
         static void Main(string[] args)
         {
+            Console.WriteLine("Randomize start peices (y/n)");
+            string input = Console.ReadLine();
+            if(input == "y")
+            {
+                game = new ChessGame(true);
+            } 
+            else
+            {
+                game = new ChessGame(false);
+            }
+
             Console.CursorVisible = false;
             ConsoleGraphics graphics = new ConsoleGraphics();
-            game = new ChessGame();
 
             do
             {

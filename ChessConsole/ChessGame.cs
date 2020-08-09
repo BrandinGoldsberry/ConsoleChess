@@ -61,10 +61,10 @@ namespace ChessConsole
         /// </summary>
         private ChessBoard.Cell moveTo = null;
 
-        public ChessGame()
+        public ChessGame(bool isRandom)
         {
             Running = true;
-            board = new ChessBoard();
+            board = new ChessBoard(isRandom);
             currentPlayer = PlayerColor.White;
             turnStart();
         }
@@ -127,7 +127,7 @@ namespace ChessConsole
                         }
                     }
 
-                    if (cell.HitBy.Contains(debugPiece))
+                    if (cell.PiecesThatCanMoveHere.Contains(debugPiece))
                         g.SetBackground(ConsoleColor.DarkMagenta, 10 + i, 5 + (7 - j));
                 }
             }

@@ -109,36 +109,36 @@ namespace ChessConsole
             foreach (ChessBoard.Cell move in possibleMoves)
             {
                 if (updateHitGraph)
-                    move.HitBy.Add(Piece);
+                    move.PiecesThatCanMoveHere.Add(Piece);
             }
         }
 
         /// <summary>
         /// Tells if the moved piece on the cell changed the hit state of the blocked 
         /// </summary>
-        /// <param name="from">Where the piece stands right now</param>
-        /// <param name="to">Where the piece is moved</param>
+        /// <param name="StartingCell">Where the piece stands right now</param>
+        /// <param name="DesiredCell">Where the piece is moved</param>
         /// <param name="blocked">Hit tests this piece</param>
         /// <returns>If blocked is hittable after moving the from</returns>
-        public bool IsBlockedIfMove(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked)
+        public bool IsBlockedIfMove(ChessBoard.Cell StartingCell, ChessBoard.Cell DesiredCell, ChessBoard.Cell blocked)
         {
-            if (possibleMoves.Contains(blocked) && !possibleMoves.Contains(to))
+            if (possibleMoves.Contains(blocked) && !possibleMoves.Contains(DesiredCell))
             {
                 //The blocked is hittable to begin with and we don't block it with a new blocker
                 //To may still equal blocked but direction should not care about that
                 return false;
             }
-            else if (possibleMoves.Contains(from))
+            else if (possibleMoves.Contains(StartingCell))
             {
-                int toIndex = possibleMoves.IndexOf(to);
+                int toIndex = possibleMoves.IndexOf(DesiredCell);
                 if (0 <= toIndex && toIndex < possibleMoves.Count - 1)
                     return true; //The blocker closer to the piece
                 else
                 {
                     //If we moved further
-                    foreach (ChessBoard.Cell move in from.OpenLineOfSight(X, Y, DesiredCount - possibleMoves.Count))
+                    foreach (ChessBoard.Cell move in StartingCell.OpenLineOfSight(X, Y, DesiredCount - possibleMoves.Count))
                     {
-                        if (move == to) //The blocker moved into the new path
+                        if (move == DesiredCell) //The blocker moved into the new path
                             return true;
                         if (move == blocked) //The blocked is hittable
                             return false;

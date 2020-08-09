@@ -110,12 +110,12 @@ namespace ChessConsole.Pieces
             directions[7] = new Direction(this, 1, -1, 1);
         }
 
-        public override bool IsBlockedIfMove(ChessBoard.Cell from, ChessBoard.Cell to, ChessBoard.Cell blocked)
+        public override bool CheckIfTargetCapturable(ChessBoard.Cell StartCell, ChessBoard.Cell DesiredCell, ChessBoard.Cell blocked)
         {
             foreach (Direction direction in directions)
             {
                 //If any direction can hit the blocked return false
-                if (!direction.IsBlockedIfMove(from, to, blocked))
+                if (!direction.IsBlockedIfMove(StartCell, DesiredCell, blocked))
                     return false;
             }
 

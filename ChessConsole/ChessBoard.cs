@@ -40,14 +40,14 @@ namespace ChessConsole
             public Piece Piece;
 
             /// <summary>
-            /// All the pieces that can hit this cell.
+            /// All the pieces that can move to this cell.
             /// </summary>
-            public List<Piece> HitBy;
+            public List<Piece> PiecesThatCanMoveHere;
 
             public Cell(ChessBoard parent, int x, int y)
             {
                 Parent = parent;
-                HitBy = new List<Piece>();
+                PiecesThatCanMoveHere = new List<Piece>();
                 X = x;
                 Y = y;
             }
@@ -81,7 +81,7 @@ namespace ChessConsole
             /// <param name="x">Relative X-coordinate of the cell</param>
             /// <param name="y">Relative X-coordinate of the cell</param>
             /// <returns>Node at (x, y) position or null if index is out of bounds</returns>
-            public Cell Open(int x, int y)
+            public Cell GetRelativeCell(int x, int y)
             {
                 //Query the parent for a cell, if null the cell is out of the board and we should not return
                 Cell cell = Parent.GetCell(X + x, Y + y);
@@ -126,9 +126,16 @@ namespace ChessConsole
         /// </summary>
         private bool inCheck;
 
-        public ChessBoard()
+        public ChessBoard(bool isRandom)
         {
-            Reset();
+            if(isRandom)
+            {
+
+            } 
+            else
+            {
+                Reset();
+            }
         }
 
         #region Getters
@@ -239,7 +246,7 @@ namespace ChessConsole
             //Clear cell hit lists
             foreach (Cell cell in cells)
             {
-                cell.HitBy.Clear();
+                cell.PiecesThatCanMoveHere.Clear();
             }
 
             //Recalculate possible moves and hit lists for cells
@@ -268,35 +275,35 @@ namespace ChessConsole
         /// <summary>
         /// Validates if a move is legal for a given piece
         /// </summary>
-        /// <param name="piece">Piece to move</param>
-        /// <param name="move">Where the piece moves</param>
+        /// <param name="Piece">Piece to move</param>
+        /// <param name="DesiredCell">Where the piece moves</param>
         /// <returns></returns>
-        private bool isMoveLegal(Piece piece, Cell move)
+        private bool isMoveLegal(Piece Piece, Cell DesiredCell)
         {
-            Piece currentKing = piece.Color == PlayerColor.White ? whiteKing : blackKing; 
+            Piece CurrentPlayerKing = Piece.Color == PlayerColor.White ? whiteKing : blackKing; 
             //The strategy is to try everything that can fail and return true only if nothing fails
 
             //If it's the king check if it moved into a check (or didn't move out that's really the same thing)
-            if (piece is King)
+            if (Piece is King)
             {
-                //If some enemy hits where we move we can't move with the king
-                foreach (Piece hitter in move.HitBy)
+                //If some enemy can move to the desired cell we can't move with the king
+                foreach (Piece LegalMover in DesiredCell.PiecesThatCanMoveHere)
                 {
-                    if (hitter.Parent != move && hitter.Color != piece.Color)
+                    if (LegalMover.Parent != DesiredCell && LegalMover.Color != Piece.Color)
                         return false;
                 }
 
                 //Validate castling
-                if (Math.Abs(move.X - piece.Parent.X) == 2)
+                if (Math.Abs(DesiredCell.X - Piece.Parent.X) == 2)
                 {
                     //You can't castle in check
                     if (inCheck)
                         return false;
 
                     //Check if some enemy hits the middle castling
-                    foreach (Piece hitter in GetCell(move.X > piece.Parent.X ? move.X - 1 : move.X + 1, move.Y).HitBy)
+                    foreach (Piece hitter in GetCell(DesiredCell.X > Piece.Parent.X ? DesiredCell.X - 1 : DesiredCell.X + 1, DesiredCell.Y).PiecesThatCanMoveHere)
                     {
-                        if (hitter.Color != piece.Color)
+                        if (hitter.Color != Piece.Color)
                             return false;
                     }
                 }
@@ -306,11 +313,12 @@ namespace ChessConsole
                 if (inCheck) //If player is in in check and if move resolves that
                 {
                     //Let's try capturing or blocking the attacker, keep in mind that we can't unblock another attacker
-                    foreach (Piece hitter in currentKing.Parent.HitBy)
+                    foreach (Piece LegalMover in CurrentPlayerKing.Parent.PiecesThatCanMoveHere)
                     {
-                        if (hitter.Color == currentKing.Color) continue; //Same color don't care
-                        if (hitter.Parent == move) continue; //Was captured
-                        if (hitter.IsBlockedIfMove(piece.Parent, move, currentKing.Parent)) continue;
+                        if (LegalMover.Color == CurrentPlayerKing.Color) continue; //Ensure we're moving the correct pieces... why though
+                        if (LegalMover.Parent == DesiredCell) continue; //Was captured <-- TODO: How does that work?
+                        //Check if piece's move takes king out of check
+                        if (LegalMover.CheckIfTargetCapturable(Piece.Parent, DesiredCell, CurrentPlayerKing.Parent)) continue;
 
                         return false;
                     }
@@ -318,12 +326,12 @@ namespace ChessConsole
 
                 //Check if a blocker moving away results in a check
                 //This also prevents pieces capturing an attacker and exposing the king to another
-                foreach (Piece hitter in piece.Parent.HitBy)
+                foreach (Piece LegalMover in Piece.Parent.PiecesThatCanMoveHere)
                 {
-                    if (hitter.Color == currentKing.Color) continue; //If it's the same color we don't care
-                    if (hitter.Parent == move) continue; //If we hit it it can not block
+                    if (LegalMover.Color == CurrentPlayerKing.Color) continue; //If it's the same color we don't care
+                    if (LegalMover.Parent == DesiredCell) continue; //If we hit it it can not block
 
-                    if (!hitter.IsBlockedIfMove(piece.Parent, move, currentKing.Parent))
+                    if (!LegalMover.CheckIfTargetCapturable(Piece.Parent, DesiredCell, CurrentPlayerKing.Parent))
                         return false;
                 }
             }
@@ -344,9 +352,9 @@ namespace ChessConsole
                 return inCheck;
 
             if (player == PlayerColor.White)
-                return whiteKing.Parent.HitBy.Any(hitter => hitter.Color != player);
+                return whiteKing.Parent.PiecesThatCanMoveHere.Any(hitter => hitter.Color != player);
             else
-                return blackKing.Parent.HitBy.Any(hitter => hitter.Color != player);
+                return blackKing.Parent.PiecesThatCanMoveHere.Any(hitter => hitter.Color != player);
         }
 
         /// <summary>
